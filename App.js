@@ -1,15 +1,16 @@
 import React from "react";
-import { useState, useEffect,useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import MoviesList from "./components/MoviesList";
 import "./App.css";
+import Movieform from "./components/Movieform";
 
 function App() {
   const [movie, setMovie] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [form, setForm] = useState([]);
 
-  const  what=useCallback(async function() {
+  const what = useCallback(async function () {
     try {
       setLoading(true);
       setError(null);
@@ -33,29 +34,27 @@ function App() {
       setError(error.message);
     }
     setLoading(false);
-  },[])
+  }, []);
 
-  //  if(count<3){
-  //   setInterval(what, 1000);
-  //     setCount(count++)
-  //  }
-  //  else{
-  //   clearInterval(what)
-  //  }
+  function setdata(title, openingtext, releasedate) {
+    var newarr=[...form, {
+      title: title,
+      openingtext: openingtext,
+      releasedate: releasedate,
+    },];
+    setForm(newarr)
+    console.log(form)
+  }
+  
+  useEffect(() => {
+    what();
+  }, [what]);
 
-  // setInterval(what, 5000);
-   useEffect(()=>{
-    what()
-   },[what])
-  //  function stop(){
-  //   clearInterval(what)
-  //   console.log("hello")
-  //  }
   return (
     <React.Fragment>
+      <Movieform setdata={setdata}></Movieform>
       <section>
         <button onClick={what}>Fetch Movies</button>
-        <button>Stop Fetching</button>
       </section>
       <section>
         {!loading && <MoviesList movies={movie} />}
@@ -65,7 +64,9 @@ function App() {
         {!loading && error && <p>{error}</p>}
         {loading && <p>loading....</p>}
         {!loading && error && <p>{error}</p>}
+        
       </section>
+     
     </React.Fragment>
   );
 }
