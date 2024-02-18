@@ -32,7 +32,7 @@ function Movieform({setdata}){
          value={openingtext}
          onChange={getopeningText}></input>
         <label>Release Date</label>
-        <input type="number"
+        <input type="text"
          value={releasedate}
          onChange={getReleaseDate}></input>
         {/* <br>

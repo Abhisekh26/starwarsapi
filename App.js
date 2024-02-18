@@ -8,48 +8,69 @@ function App() {
   const [movie, setMovie] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [form, setForm] = useState([]);
 
   const what = useCallback(async function () {
     try {
       setLoading(true);
       setError(null);
-      const x = await fetch("https://swapi.dev/api/films/");
+      // const x = await fetch("https://swapi.dev/api/films/");
+      const x = await fetch(
+        "https://react-http-f5f7f-default-rtdb.firebaseio.com/movies.json"
+      );
       if (!x.ok) {
         throw new Error("something went wrong....Retrying");
       }
       const y = await x.json();
-      console.log(y.results);
-      // console.log("hello");
-      var z = y.results.map((item) => ({
-        id: item.episode_id,
-        title: item.title,
-        releasedate: item.release_date,
-        openingtext: item.opening_crawl,
-      }));
-      setMovie(z);
+      const loadedmovies=[]
+      for(const key in y){
+        loadedmovies.push({
+          id:key,
+          title:y[key].title,
+          openingtext:y[key].openingtext,
+          releasedate:y[key].releasedate,
+        })
+      }
+     
+      setMovie(loadedmovies);
 
-      console.log(movie);
+      // console.log(movie);
     } catch (error) {
       setError(error.message);
     }
     setLoading(false);
   }, []);
 
-  function setdata(title, openingtext, releasedate) {
-    var newarr=[...form, {
-      title: title,
-      openingtext: openingtext,
-      releasedate: releasedate,
-    },];
-    setForm(newarr)
-    console.log(form)
-  }
-  
   useEffect(() => {
     what();
   }, [what]);
 
+  async function setdata(title, openingtext, releasedate) {
+    var newObj = {
+      title: title,
+      openingtext: openingtext,
+      releasedate: releasedate,
+    };
+    // console.log(newObj);
+     const response=await fetch("https://react-http-f5f7f-default-rtdb.firebaseio.com/movies.json", {
+      method: "POST",
+      body: JSON.stringify(newObj),
+      headers:{
+        "Content-type": "application/json"
+      }
+    });
+    const data= await response.json()
+    console.log(data)
+  }
+  async function deletemovie(ide){
+    // var key=ide
+    const response= await fetch (`https://react-http-f5f7f-default-rtdb.firebaseio.com/movies/${ide}.json`,{
+      method:"DELETE"
+     })
+    var newr = movie.filter(movie=>movie.id!==ide)
+    setMovie(newr)
+    
+
+  }
   return (
     <React.Fragment>
       <Movieform setdata={setdata}></Movieform>
@@ -57,7 +78,8 @@ function App() {
         <button onClick={what}>Fetch Movies</button>
       </section>
       <section>
-        {!loading && <MoviesList movies={movie} />}
+        {!loading && <MoviesList movies={movie}
+        deletemovie={deletemovie} />}
         {!loading && movie.length === 0 && !error && (
           <p>no movies to show...</p>
         )}
@@ -66,7 +88,6 @@ function App() {
         {!loading && error && <p>{error}</p>}
         
       </section>
-     
     </React.Fragment>
   );
 }
